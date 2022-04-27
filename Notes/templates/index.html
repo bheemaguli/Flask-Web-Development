@@ -1,1 +1,11 @@
-<h1>Hello World!</h1>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    {% block page_content %}
+    <div class="page-header">
+        <h1>Hello World!</h1>
+    </div>
+    {% endblock %}
+</div>
+{% endblock %}
