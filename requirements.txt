@@ -5,3 +5,8 @@ Jinja2
 MarkupSafe
 Werkzeug
 flask_bootstrap
+flask_moment
+flask_wtf
+wtforms
+flask-sqlalchemy
+flask-migrate
