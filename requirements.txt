@@ -10,3 +10,4 @@ flask_wtf
 wtforms
 flask-sqlalchemy
 flask-migrate
+flask-mail
