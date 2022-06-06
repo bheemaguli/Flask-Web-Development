@@ -10,11 +10,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
 from flask_mail import Mail
+from flask_mail import Message
+from threading import Thread
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app     = Flask(__name__)
-mail    = Mail(app)
 db      = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -25,12 +26,30 @@ app.config['SQLALCHEMY_DATABASE_URI']           = \
     'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']    = False
 
-app.config['MAIL_SERVER']   = 'smtp.googlemail.com'
-app.config['MAIL_PORT']     = 587
-app.config['MAIL_USE_TLS']  = True
+app.config['MAIL_SERVER']='smtp.vanward.co'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = False
+# $env:MAIL_USERNAME="name@email.com"  for powershell
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[FLASK LEARNING]'
+app.config['FLASKY_MAIL_SENDER']         = 'sumanth@vanward.co'
+app.config['FLASKY_ADMIN'] = os.environ.get('FLASKY_ADMIN')
+mail    = Mail(app)  # generate this after the above configs!!!
 
+def send_email(to, subject, template, **kwargs):
+    msg = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + subject,
+                  sender=app.config['FLASKY_MAIL_SENDER'], recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return thr
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
 
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
@@ -68,7 +87,10 @@ def index():
             db.session.add(user)
             db.session.commit()
             session['known'] = False
-            flash('Looks like you have changed your name!')
+            if app.config['FLASKY_ADMIN']:
+                send_email(app.config['FLASKY_ADMIN'], 'New User',
+                           'mail/new_user', user=user)
+                flash('Looks like you have added a new name!')
         else:
             session['known'] = True
         session['name'] = form.name.data
