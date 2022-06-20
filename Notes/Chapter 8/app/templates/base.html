@@ -8,27 +8,32 @@
 <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 {% endblock %}
 
-
 {% block navbar %}
 <div class="navbar navbar-light navbar-static-top" style="background-color: #751cbe;" role="navigation">
     <div class="container">
         <div class="navbar-header">
-            <button type="button" class="navbar-toggle"
-             data-toggle="collapse" data-target=".navbar-collapse">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                 <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/" style="color: #ffffff">Home</a>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}" style="color: #ffffff">Flasky</a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="{{ url_for('main.index') }}" style="color: #ffffff">Home</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('auth.logout') }}" style="color: #ffffff">Log Out</a></li>
+                {% else %}
+                <li><a href="{{ url_for('auth.login') }}" style="color: #ffffff">Log In</a></li>
+                {% endif %}
+            </ul>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-{{ moment.include_moment() }}
 {% endblock %}
 
 {% block content %}
@@ -41,4 +46,9 @@
     {% endfor %}
     {% block page_content %}{% endblock %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ moment.include_moment() }}
 {% endblock %}
